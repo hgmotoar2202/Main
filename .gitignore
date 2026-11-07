@@ -1,0 +1,35 @@
+# Dependencias y builds
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+.expo/
+coverage/
+*.log
+
+# Secretos y configuración local (NUNCA subir)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Datos reales y evidencias (solo datos sintéticos en el repo)
+data-real/
+uploads/
+*.mp4
+*.mov
+*.avi
+
+# Backups locales
+backups/
+*.bundle
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
