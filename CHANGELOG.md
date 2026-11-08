@@ -5,6 +5,26 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Sin publicar]
 
+## [0.1.0] - 2026-11-08
+### Añadido
+- Monorepo con pnpm workspaces, TypeScript, ESLint y CI en GitHub Actions (lint, typecheck, pruebas y build).
+- `packages/domain`: estados del Expediente y cálculo de campos corregidos, con pruebas.
+- `packages/contracts`: contrato `ExtractionV1` en Zod, estricto y con pruebas.
+- `apps/api`: API NestJS con endpoint `/health` y validación de configuración.
+- `apps/web`: web Next.js mínima en español.
+- MongoDB local con Docker Compose, `.env.example` y guía de desarrollo (`docs/desarrollo.md`).
+- Registro de aprobaciones del Product Owner (`docs/BMAD/aprobaciones.md`).
+
+## [0.0.6] - 2026-11-08
+### Cambiado
+- El RAG pasa a ser imprescindible en el MVP: PRD v0.2, Product Brief v0.4, arquitectura con AD-12 y ADR-0008.
+- Modelo de datos con `corpus_versions` y `rag_queries`; matriz RBAC con los endpoints de conocimiento.
+
+## [0.0.5] - 2026-11-08
+### Añadido
+- Arquitectura v0.1 (`_bmad-output/architecture-spine-insure-ai.md`) y ADR-0002 a ADR-0007.
+- Modelo de datos, contrato `ExtractionV1`, estados del Expediente y matriz RBAC (`_bmad-output/modelo-datos-contratos-rbac.md`).
+
 ## [0.0.4] - 2026-11-08
 ### Añadido
 - PRD v0.1 de INSURE AI con 29 requisitos funcionales y registro de requisitos (`_bmad-output/prd-insure-ai.md`).
@@ -12,7 +32,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Guía de rollback (`docs/RELEASES/guia-rollback.md`).
 
 ### Cambiado
-- CHANGELOG con el historial de versiones v0.0.1 a v0.0.4.
+- CHANGELOG con el historial de versiones.
 
 ## [0.0.3] - 2026-11-08
 ### Añadido

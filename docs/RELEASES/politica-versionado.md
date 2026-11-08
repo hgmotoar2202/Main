@@ -51,4 +51,7 @@ Los tags son **anotados** (`git tag -a`) y llevan un mensaje que dice qué conti
 | `v0.0.1` | `4dab3b1` | 2026-11-07 | Estructura inicial, políticas, ADR-0001 y script de respaldo |
 | `v0.0.2` | `d5e029f` | 2026-11-07 | BMAD 6.12.4 instalado (módulo BMM, Claude Code) y plan maestro como contexto |
 | `v0.0.3` | `1f1ccf8` | 2026-11-08 | Product Brief v0.3 consolidado, análisis del Brief v0.2 y PDF del Brief v0.2 |
-| `v0.0.4` | (se completa al crearlo) | 2026-11-08 | PRD v0.1, política de versionado, guía de rollback y CHANGELOG |
+| `v0.0.4` | `adcf56b` | 2026-11-08 | PRD v0.1, política de versionado, guía de rollback y CHANGELOG |
+| `v0.0.5` | `f47a1e5` | 2026-11-08 | Arquitectura v0.1, ADR-0002 a 0007, modelo de datos, contrato ExtractionV1 y matriz RBAC |
+| `v0.0.6` | `1087579` | 2026-11-08 | RAG imprescindible en el MVP: PRD v0.2, Brief v0.4, AD-12 y ADR-0008 |
+| `v0.1.0` | (se completa al crearlo) | 2026-11-08 | Foundation: monorepo, paquetes domain y contracts, API y web mínimas, CI y MongoDB con Docker Compose |
