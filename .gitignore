@@ -33,3 +33,7 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+# Esqueleto del monorepo
+storage/
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,20 @@
+{
+  "name": "insure-ai",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.0",
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "build:libs": "pnpm --filter @insure/domain --filter @insure/contracts build",
+    "build": "pnpm build:libs && pnpm --filter @insure/api --filter @insure/web build",
+    "typecheck": "pnpm build:libs && pnpm -r --if-present typecheck",
+    "test": "pnpm build:libs && pnpm -r --if-present test",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "eslint": "^9",
+    "typescript": "^5",
+    "typescript-eslint": "^8"
+  }
+}
