@@ -106,6 +106,12 @@ Dependencias permitidas: solo en el sentido de las flechas. `packages/domain` no
 - **Prevents:** transiciones arbitrarias y validaciones sin permiso
 - **Rule:** las transiciones válidas están definidas en `packages/domain` (tabla en `modelo-datos-contratos-rbac.md`). Cualquier otra se rechaza. Solo un Revisor o un Administrador puede fijar "validado por responsable".
 
+### AD-12 — El conocimiento se recupera por puertos y se versiona
+
+- **Binds:** FR-23, FR-24, FR-25, FR-30, FR-31
+- **Prevents:** respuestas sin fuente, un Corpus que cambia sin rastro y el acoplamiento a un motor de búsqueda
+- **Rule:** el módulo `knowledge` expone `RetrieverPort` (adaptador por defecto: índice de texto de MongoDB; un adaptador con embeddings es opcional). La ingesta fragmenta los documentos, calcula hashes y genera una Versión de corpus reproducible. Toda respuesta incluye Citas (documento, sección, versión) o la abstención "información insuficiente" cuando la puntuación de recuperación no supera el umbral configurado. Cada consulta guarda la Versión de corpus, los fragmentos recuperados con su puntuación, la versión de prompt y el proveedor. Los documentos no vigentes no se recuperan. La evaluación del RAG se ejecuta con un Conjunto de evaluación versionado en el repositorio.
+
 ## Consistency Conventions
 
 | Concern | Convention |
@@ -158,6 +164,7 @@ erDiagram
   FORM_TEMPLATES ||--o{ GENERATED_FORMS : origina
   USERS ||--o{ AUDIT_EVENTS : actua
   KNOWLEDGE_DOCUMENTS ||--o{ KNOWLEDGE_CHUNKS : contiene
+  USERS ||--o{ RAG_QUERIES : consulta
 ```
 
 Despliegue del MVP: `docker compose` con tres servicios (`web`, `api`, `mongo`) y un volumen para los archivos. Un comando levanta todo, con semillas sintéticas (FR-29).
@@ -172,7 +179,8 @@ Main/
     domain/     # reglas puras (estados, correcciones)
   tests/
     e2e/        # flujo principal
-    ai-evaluation/  # Casos sintéticos y medición de extracción
+    ai-evaluation/  # Casos sintéticos, Conjunto de evaluación del RAG y mediciones
+  corpus/       # documentos sintéticos del Corpus, versionados (fuente del RAG)
   infrastructure/   # docker-compose y Dockerfiles
   docs/ _bmad-output/ policies/ scripts/
 ```
@@ -189,7 +197,7 @@ Las carpetas `apps/workers`, `apps/mobile`, `packages/api-client`, `packages/val
 | Revisión y validación (FR-14..FR-16) | módulo `claims`; `packages/domain` | AD-2, AD-5, AD-11 |
 | Evidencias (FR-17..FR-19) | módulo `evidence` | AD-3, AD-8 |
 | Formularios PDF (FR-20..FR-22) | módulo `forms` | AD-5, AD-6 |
-| Base de conocimiento (FR-23..FR-25) | módulo `knowledge` | AD-4, AD-6 |
+| Base de conocimiento (FR-23..FR-25, FR-30, FR-31) | módulo `knowledge`; `corpus/`; `tests/ai-evaluation` | AD-4, AD-6, AD-12 |
 | Auditoría (FR-26, FR-27) | módulo `audit` | AD-6 |
 | Evaluación y arranque (FR-28, FR-29) | `tests/ai-evaluation`; `infrastructure` | AD-10 |
 
@@ -199,7 +207,7 @@ Las carpetas `apps/workers`, `apps/mobile`, `packages/api-client`, `packages/val
 | --- | --- |
 | Colas y workers (Redis, BullMQ) | El procesamiento síncrono basta para el MVP (AD-9) |
 | Almacenamiento de objetos S3 | El disco local detrás de `StoragePort` basta; se cambia el adaptador después |
-| Base vectorial (MongoDB Vector Search o Qdrant) | La base de conocimiento es opcional en el MVP; la comparativa va a fase 2 |
+| Recuperación semántica con embeddings y base vectorial (MongoDB Vector Search o Qdrant) | El MVP recupera por texto con un puerto listo; el adaptador semántico se añade cuando haya clave de embeddings; la comparativa va a fase 2 |
 | Análisis de video e imágenes | Fuera del alcance (decisión del Product Owner) |
 | App móvil nativa | Fase posterior; consumirá el mismo API |
 | Multi-organización, MFA, firma electrónica | Fuera del alcance del MVP |

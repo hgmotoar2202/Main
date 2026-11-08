@@ -2,7 +2,7 @@
 title: INSURE AI
 created: 2026-11-08
 updated: 2026-11-08
-status: borrador v0.1, pendiente de aprobación del Product Owner
+status: borrador v0.2 (el RAG pasa a imprescindible), pendiente de aprobación del Product Owner
 ---
 
 # PRD: INSURE AI
@@ -81,6 +81,9 @@ Terceros ajenos al Expediente, aseguradoras u organismos externos con integraci�
 - **Formulario** — PDF generado a partir de una Plantilla de formulario y datos validados.
 - **Documento de conocimiento** — Texto autorizado (póliza, procedimiento, norma) con versión y vigencia.
 - **Cita** — Referencia a un Documento de conocimiento: documento, sección y versión.
+- **Corpus** — Conjunto de Documentos de conocimiento autorizados (sintéticos en el MVP) que sustentan las respuestas.
+- **Versión de corpus** — Identificador reproducible del contenido del Corpus en un momento dado; cada respuesta registra la suya.
+- **Conjunto de evaluación** — Preguntas de referencia con la respuesta y las Citas esperadas, o con la abstención esperada, que sirven para medir el RAG.
 - **Evento de auditoría** — Registro inmutable de quién hizo qué, sobre qué y cuándo.
 - **Proveedor de IA** — Servicio que produce Propuestas de IA; puede ser real o simulado.
 - **Proveedor simulado** — Proveedor de IA que devuelve respuestas de ejemplo predefinidas, sin red ni clave.
@@ -288,32 +291,51 @@ El sistema guarda el PDF y su origen. Realiza UJ-2.
 - Se guarda la versión de la plantilla, la fecha, el autor y el hash del PDF.
 - Regenerar el Formulario crea una nueva versión sin borrar la anterior.
 
-### 4.7 Base de conocimiento (RAG mínimo)
+### 4.7 Base de conocimiento (RAG)
 
-**Descripción:** El Revisor consulta Documentos de conocimiento sintéticos y obtiene respuestas con Cita o "información insuficiente". `[NON-GOAL for MVP: OCR, embeddings a escala, evaluación comparativa de bases vectoriales]` Realiza UJ-4. *Primer candidato a recortarse si el tiempo falla.*
+**Descripción:** El sistema sustenta sus respuestas en un Corpus de Documentos de conocimiento autorizados (sintéticos en el MVP). El Administrador carga los documentos; el sistema los fragmenta, calcula su hash y registra una Versión de corpus reproducible. El Revisor consulta y recibe respuestas con Citas, o "información insuficiente" cuando no hay soporte. Cada respuesta registra la Versión de corpus, la versión de prompt y el proveedor, y un Conjunto de evaluación mide la calidad. `[ASSUMPTION: recuperación léxica (índice de texto) por defecto, sin clave; el recuperador es intercambiable por uno con embeddings]` `[NON-GOAL for MVP: OCR de documentos escaneados]` Realiza UJ-4.
 
 **Requisitos funcionales:**
 
-#### FR-23: Documentos de conocimiento con metadatos
-El Administrador puede cargar y listar Documentos de conocimiento con tipo, versión y vigencia. Realiza UJ-4.
+#### FR-23: Carga e ingesta de Documentos de conocimiento
+El Administrador puede cargar Documentos de conocimiento y ejecutar su ingesta. Realiza UJ-4.
 
 **Consecuencias (verificables):**
 - Cada documento guarda tipo (póliza, procedimiento, norma), versión, fecha de publicación y vigencia.
-- Los documentos no vigentes no se usan en las respuestas.
+- La ingesta fragmenta el documento conservando sección y orden, y calcula el hash de cada fragmento.
+- Los documentos no vigentes no se recuperan en las respuestas.
+- Ingestar el mismo contenido produce la misma Versión de corpus.
 
 #### FR-24: Consulta con Citas
 Un Revisor puede hacer una pregunta y recibir una respuesta con Citas. Realiza UJ-4.
 
 **Consecuencias (verificables):**
 - Cada afirmación de la respuesta se acompaña de una Cita (documento, sección, versión).
-- Se registran la consulta, los fragmentos recuperados y la versión del prompt y del modelo.
+- Se registran la consulta, los fragmentos recuperados con su puntuación, la versión de prompt, el proveedor y la Versión de corpus.
+- Solo se citan fragmentos que realmente fueron recuperados.
 
 #### FR-25: Abstención
 Si no hay evidencia suficiente, el sistema responde "información insuficiente". Realiza UJ-4.
 
 **Consecuencias (verificables):**
-- Para preguntas sin soporte en los documentos, no se inventan artículos, coberturas ni requisitos.
-- Existe al menos una prueba con una pregunta sin soporte.
+- Si la mejor puntuación de recuperación no supera el umbral configurado, el sistema se abstiene y no genera contenido.
+- Para preguntas sin soporte en el Corpus, no se inventan artículos, coberturas ni requisitos.
+- Existe al menos una prueba automatizada con una pregunta sin soporte.
+
+#### FR-30: Versionado del Corpus
+El Administrador puede reindexar el Corpus y consultar el historial de Versiones de corpus. Realiza UJ-4.
+
+**Consecuencias (verificables):**
+- Cada reindexación genera una Versión de corpus con la lista de documentos y sus hashes.
+- Para cualquier respuesta registrada se puede saber con qué Versión de corpus y qué fragmentos se produjo.
+
+#### FR-31: Evaluación del RAG
+El proyecto incluye un Conjunto de evaluación y un comando que mide el RAG.
+
+**Consecuencias (verificables):**
+- El Conjunto de evaluación incluye preguntas con soporte en el Corpus y preguntas sin soporte.
+- El comando reporta Recall@k, exactitud de Citas y tasa de abstención correcta, e indica qué recuperador y proveedor se usaron.
+- El resultado se guarda en el repositorio como evidencia.
 
 ### 4.8 Auditoría
 
@@ -372,14 +394,16 @@ Cualquier persona puede levantar el sistema con un solo comando, con datos de ej
 - Reporte común a los tres escenarios con secciones condicionales (FR-4 a FR-7).
 - Propuesta de IA con Proveedor simulado y adaptador (FR-8 a FR-13).
 - Revisión humana y validación (FR-14 a FR-16).
-- Evidencias: subir, guardar con hash y controlar acceso (FR-17 a FR-19).
+- Evidencias: subir, guardar con hash y controlar acceso (FR-17 a FR-19); deseable y primer recorte si el tiempo falla.
 - Formulario PDF desde plantilla versionada (FR-20 a FR-22).
+- Base de conocimiento (RAG): ingesta versionada, consulta con Citas, abstención y evaluación (FR-23 a FR-25, FR-30, FR-31).
 - Auditoría (FR-26, FR-27).
 - Evaluación con Casos sintéticos y arranque con un comando (FR-28, FR-29).
 
 ### 6.2 Fuera del alcance del MVP
 
-- Base de conocimiento (FR-23 a FR-25): `[NOTE FOR PM]` se construye solo si el flujo central queda terminado a tiempo.
+- Recuperación semántica con embeddings y base vectorial: el MVP usa recuperación léxica con un puerto listo para añadirla (fase 2, o antes si hay clave de embeddings).
+- OCR de documentos escaneados: fase 2.
 - Análisis de video, frames y análisis visual: fase 2.
 - App móvil nativa, trabajo sin conexión: fase 2.
 - Colas y procesamiento asíncrono: el MVP procesa de forma síncrona con un estado de procesamiento visible. `[ASSUMPTION]`
@@ -392,6 +416,7 @@ Cualquier persona puede levantar el sistema con un solo comando, con datos de ej
 - **SM-2**: Exactitud por campo, campos omitidos y valores inventados en los Casos sintéticos; se reporta el resultado real. Valida FR-8, FR-9, FR-28.
 - **SM-3**: 100 % de las pruebas negativas de autorización pasan (rol sin permiso es rechazado). Valida FR-2, FR-19, FR-27.
 - **SM-4**: El sistema arranca con `docker compose up` y los datos de ejemplo en una máquina limpia. Valida FR-29.
+- **SM-7**: Recall@k, exactitud de Citas y abstención correcta del RAG, medidos sobre el Conjunto de evaluación; se reporta el resultado real y con qué recuperador. Valida FR-24, FR-25, FR-31.
 
 **Secundarias**
 - **SM-5**: Cada acción relevante tiene su Evento de auditoría. Valida FR-26.
@@ -410,6 +435,8 @@ Cualquier persona puede levantar el sistema con un solo comando, con datos de ej
 5. ¿Qué Documentos de conocimiento se usarán? En el MVP son sintéticos.
 6. ¿Qué se evalúa: código, documentación, demostración funcionando, o todo?
 7. ¿La interfaz y la documentación van en español? Se asume que sí.
+8. ¿Habrá una clave de un servicio de embeddings para añadir recuperación semántica?
+9. ¿Qué Documentos de conocimiento reales y autorizados alimentarán el Corpus cuando se pase de datos sintéticos a un piloto?
 
 ## 9. Índice de supuestos
 
@@ -419,6 +446,8 @@ Cualquier persona puede levantar el sistema con un solo comando, con datos de ej
 - §4.5 FR-17: sin antivirus real en v1.
 - §4.6 FR-20: se usa una Plantilla de formulario sintética propia.
 - §6.2: procesamiento síncrono con estado visible, sin colas.
+- §4.7: recuperación léxica por defecto, sin clave; el recuperador es intercambiable por uno con embeddings.
+- Decisión del Product Owner (8 nov): el RAG es imprescindible desde el MVP.
 - Se desconoce el enunciado de la prueba y se toman el Plan Maestro y el Brief v0.2 como requisitos.
 - El Product Owner y quien desarrolla son la misma persona; las aprobaciones se registran por escrito en el repositorio.
 
@@ -458,16 +487,18 @@ Prioridad: M = imprescindible, S = deseable, C = si hay tiempo. Aprobación: pen
 | FR-14 Revisión y corrección | Plan Maestro §3 | M | Propuesto | Pendiente |
 | FR-15 Clasificación multidimensional | Brief v0.2 §3.1 | M | Propuesto | Pendiente |
 | FR-16 Validación del Expediente | Plan Maestro §3 | M | Propuesto | Pendiente |
-| FR-17 Subir Evidencias | Plan Maestro §3 | S | Propuesto | Pendiente |
-| FR-18 Hash y metadatos | Plan Maestro §6.2 | S | Propuesto | Pendiente |
-| FR-19 Acceso controlado | Plan Maestro §8 | S | Propuesto | Pendiente |
+| FR-17 Subir Evidencias | Plan Maestro §3 | C | Propuesto | Pendiente |
+| FR-18 Hash y metadatos | Plan Maestro §6.2 | C | Propuesto | Pendiente |
+| FR-19 Acceso controlado | Plan Maestro §8 | C | Propuesto | Pendiente |
 | FR-20 Plantilla versionada | Plan Maestro §3 | M | Propuesto | Pendiente |
 | FR-21 Previsualizar y generar Formulario | Plan Maestro §3 | M | Propuesto | Pendiente |
 | FR-22 Registro del Formulario | Plan Maestro §4.2 | M | Propuesto | Pendiente |
-| FR-23 Documentos de conocimiento | Plan Maestro §5 | C | Propuesto | Pendiente |
-| FR-24 Consulta con Citas | Plan Maestro §5.2 | C | Propuesto | Pendiente |
-| FR-25 Abstención | Plan Maestro §5.2 | C | Propuesto | Pendiente |
+| FR-23 Carga e ingesta de Documentos de conocimiento | Plan Maestro §5; Product Owner (8 nov) | M | Propuesto | Pendiente |
+| FR-24 Consulta con Citas | Plan Maestro §5.2; Product Owner (8 nov) | M | Propuesto | Pendiente |
+| FR-25 Abstención | Plan Maestro §5.2; Product Owner (8 nov) | M | Propuesto | Pendiente |
 | FR-26 Registro de auditoría | Plan Maestro §3, §8 | M | Propuesto | Pendiente |
 | FR-27 Consulta de la Auditoría | Plan Maestro §3 | M | Propuesto | Pendiente |
 | FR-28 Evaluación con Casos sintéticos | Brief v0.2 §7 | S | Propuesto | Pendiente |
 | FR-29 Arranque con un comando | Análisis, Brief v0.3 | M | Propuesto | Pendiente |
+| FR-30 Versionado del Corpus | Plan Maestro §5.2, §13; Product Owner (8 nov) | M | Propuesto | Pendiente |
+| FR-31 Evaluación del RAG | Plan Maestro §16; Brief v0.2 §7; Product Owner (8 nov) | M | Propuesto | Pendiente |

@@ -17,14 +17,16 @@ Convenciones: ids como cadenas, fechas ISO 8601 en UTC, nombres de colección en
 | `evidences` | `claimId`, `originalName`, `mimeType`, `size`, `sha256`, `storageKey`, `uploadedBy`, `createdAt` | `claimId`, `sha256` |
 | `form_templates` | `templateId`, `version`, `name`, `fieldMap` (campo de la plantilla → ruta del dato validado), `active` | `templateId + version` único |
 | `generated_forms` | `claimId`, `templateId`, `templateVersion`, `storageKey`, `sha256`, `version`, `generatedBy`, `createdAt` | `claimId` |
-| `knowledge_documents` | `title`, `docType` (póliza, procedimiento, norma), `version`, `publishedAt`, `validFrom`, `validTo`, `storageKey` | `docType`, `validTo` |
-| `knowledge_chunks` | `documentId`, `section`, `text`, `order` | índice de texto sobre `text` |
+| `knowledge_documents` | `title`, `docType` (póliza, procedimiento, norma), `version`, `publishedAt`, `validFrom`, `validTo`, `contentHash`, `storageKey` | `docType`, `validTo` |
+| `knowledge_chunks` | `documentId`, `docVersion`, `corpusVersion`, `section`, `order`, `text`, `hash` | índice de texto sobre `text`; `corpusVersion` |
+| `corpus_versions` | `version`, `createdAt`, `createdBy`, `documents[]` (`documentId`, `version`, `contentHash`) | `version` único |
+| `rag_queries` | `userId`, `query`, `corpusVersion`, `retrieved[]` (`chunkId`, `score`), `answer`, `citations[]`, `abstained`, `promptVersion`, `provider`, `model`, `createdAt` | `userId`, `createdAt` |
 | `audit_events` | `actorId`, `action`, `objectType`, `objectId`, `result`, `correlationId`, `at`, `meta` | `at`, `actorId`, `action`, `objectId` |
 
 Notas:
 - `validatedData` es nulo hasta que un Revisor valida; solo de ahí sale el Formulario.
 - `audit_events` solo admite inserciones desde la aplicación.
-- `knowledge_chunks` existe solo si se construye la base de conocimiento (opcional en el MVP).
+- La base de conocimiento es parte del MVP: cada consulta queda en `rag_queries` con su Versión de corpus y los fragmentos recuperados.
 
 ## 2. Estados del Expediente (`dimensions.evaluationStatus`)
 
@@ -99,6 +101,8 @@ Roles: **Reportante** (R), **Revisor** (V), **Administrador** (A). "propio" sign
 | `POST /claims/:id/forms` (solo si está validado) | — | sí | sí |
 | `GET /forms/:id/download` | — | sí | sí |
 | `POST /knowledge/documents` | — | — | sí |
+| `POST /knowledge/reindex` | — | — | sí |
+| `GET /knowledge/corpus-versions` | — | sí | sí |
 | `GET /knowledge/documents` | — | sí | sí |
 | `POST /knowledge/query` | — | sí | sí |
 | `GET /audit` | — | — | sí |
@@ -116,9 +120,12 @@ Negativos:
 8. Nadie puede editar ni borrar un Evento de auditoría (no existe el endpoint).
 9. No se puede generar un Formulario de un Expediente que no esté validado.
 10. Una Propuesta de IA no puede llevar el Estado a "validado por responsable".
+11. Un Reportante no puede consultar la base de conocimiento.
+12. Un Revisor no puede cargar documentos ni reindexar el Corpus.
 
 Positivos:
 1. Un Reportante crea un Expediente, lo ve en su lista y lo envía.
 2. Un Revisor ve todos los Expedientes, corrige, valida y genera el Formulario.
 3. Un Administrador crea un usuario, le asigna un rol y consulta la Auditoría.
 4. Cada una de estas acciones genera su Evento de auditoría.
+5. Un Administrador carga un documento y reindexa; un Revisor consulta y recibe Citas; una pregunta sin soporte recibe "información insuficiente".

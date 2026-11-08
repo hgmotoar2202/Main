@@ -2,7 +2,7 @@
 
 - Autor: Giovanny
 - Fecha: 2026-11-07
-- Versión: 0.3 (consolidado), pendiente de aprobación del Product Owner
+- Versión: 0.4 (el RAG pasa a imprescindible), pendiente de aprobación del Product Owner
 - Origen: Plan Maestro INSURE AI v1.0 y Product Brief v0.2 (ambos en `docs/contexto/`), recortados al alcance de una prueba técnica de 5 días. Las diferencias y decisiones están en `analisis-product-brief-v0-2.md`.
 
 ## Executive Summary
@@ -58,6 +58,7 @@ Para la demostración de la prueba técnica (valores objetivo, a calibrar con ca
 - La extracción se evalúa con un conjunto de casos sintéticos con respuesta esperada conocida, midiendo exactitud por campo, campos omitidos y valores inventados; se reporta el resultado real, no una cifra prometida.
 - Los permisos están probados en la API con casos positivos y negativos: un rol sin autorización recibe rechazo aunque el botón no se vea.
 - Cada resultado de IA es trazable y cada acción relevante queda en auditoría.
+- El RAG se evalúa con un conjunto de preguntas de referencia y reporta recuperación, exactitud de citas y abstención correcta.
 - Cualquier persona puede clonar el repositorio, ejecutar un solo comando y ver funcionando el flujo.
 - Pruebas unitarias y de API en verde, y al menos una prueba E2E del flujo principal.
 
@@ -71,7 +72,7 @@ Para la demostración de la prueba técnica (valores objetivo, a calibrar con ca
 - Carga de evidencias (documentos e imágenes) con metadatos y hash, sin análisis visual.
 - Generación de PDF desde una plantilla versionada.
 - Auditoría de acciones.
-- Consulta de conocimiento mínima (RAG) sobre 3 a 5 documentos sintéticos, con citas y respuesta "información insuficiente". *Primer candidato a recortarse si el tiempo aprieta.*
+- Base de conocimiento (RAG) imprescindible: Corpus sintético versionado, ingesta, consulta con citas, abstención ("información insuficiente") y evaluación con preguntas de referencia. Recuperación léxica por defecto, con un puerto listo para embeddings.
 - Datos 100 % sintéticos; despliegue local con `docker compose`; pruebas y documentación.
 - Interfaz web responsive.
 
@@ -89,6 +90,7 @@ Para la demostración de la prueba técnica (valores objetivo, a calibrar con ca
 - Se asume una sola organización y Colombia como jurisdicción de referencia. Para casos reales haría falta asesoría jurídica (Ley 1581 de 2012); no se usan datos reales.
 - La extracción con IA requiere una clave de API de un proveedor de modelos, dependencia externa. **Mitigación:** una capa adaptadora con un proveedor simulado (respuestas de ejemplo) para que la demostración funcione sin clave o crédito.
 - Las tecnologías (Next.js, NestJS, MongoDB) son candidatas y se confirman en arquitectura mediante ADR.
+- En este proyecto "entrenar" significa construir y mejorar el conocimiento (Corpus), las instrucciones (prompts versionados), los contratos y las evaluaciones; no se ajustan los pesos de un modelo. BMAD define y sustenta ese proceso; el código lo escribe Claude y el diseño UX lo trabaja ChatGPT.
 
 ## Vision
 

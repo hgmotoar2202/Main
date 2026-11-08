@@ -49,7 +49,7 @@ El Brief v0.2 aporta decisiones útiles (tres escenarios, web primero, modelo mu
 1. **"No programar hasta aprobar PRD, arquitectura y backlog."** Se respeta con puertas cortas: el Product Owner (tú) aprueba por escrito cada documento, y la aprobación queda registrada en el repositorio. Sin esa puerta no se escribe código del área correspondiente.
 2. **Tres escenarios completos.** Un solo flujo con secciones condicionales evita triplicar el trabajo. Los escenarios se diferencian en datos, no en pantallas distintas.
 3. **Carga de evidencias.** Se incluye subir, guardar con hash y metadatos y mostrar la lista; el análisis visual queda fuera.
-4. **RAG.** Es el primer recorte si el tiempo falla; el flujo reportar → revisar → PDF es la prioridad no negociable.
+4. **RAG.** Decisión del Product Owner (8 nov): entra al MVP como requisito imprescindible, en versión mínima (recuperación léxica, citas, abstención y evaluación). El primer recorte pasa a ser Evidencias; el flujo reportar → revisar → PDF sigue siendo prioridad.
 5. **Sin Claude Code.** El código se entrega por historias pequeñas mediante scripts que crean los archivos en tu equipo. Falta validar el mecanismo de transferencia (véase la prueba de descarga propuesta).
 
 ## 5. Registro de decisiones y supuestos
@@ -63,6 +63,7 @@ El Brief v0.2 aporta decisiones útiles (tres escenarios, web primero, modelo mu
 | D-05 | Frames y video fuera del MVP | Product Owner | Adoptada |
 | D-06 | Colas asíncronas fuera del MVP | Análisis | Propuesta |
 | D-07 | Aprobaciones del Product Owner registradas en el repositorio | Análisis | Propuesta |
+| D-08 | RAG imprescindible desde el MVP (recuperación léxica con puerto para embeddings) | Product Owner (8 nov) | Adoptada |
 | S-01 | Se desconoce el enunciado de la prueba | Product Owner | Supuesto |
 | S-02 | Una sola organización; Colombia como referencia | Plan Maestro | Supuesto |
 | S-03 | Datos 100 % sintéticos | Plan Maestro | Regla |
@@ -97,8 +98,8 @@ El Brief v0.2 aporta decisiones útiles (tres escenarios, web primero, modelo mu
 | Dom 8 | Arquitectura breve, ADR, modelo de datos y contratos JSON, matriz RBAC, historias; monorepo y CI básico | PRD, arquitectura y backlog |
 | Lun 9 | Backend: usuarios, roles, expedientes, auditoría, con pruebas | Historias de backend |
 | Mar 10 | Frontend: login, bandeja, asistente de reporte; adaptador de IA y extracción | Flujo de reporte |
-| Mié 11 | Revisión humana, evidencias, PDF desde plantilla | Flujo completo |
-| Jue 12 | RAG mínimo si hay tiempo, pruebas E2E, evaluación de casos sintéticos, README, `docker compose` | Lista de calidad |
+| Mié 11 | Base de conocimiento (RAG): ingesta, Corpus sintético, consulta con Citas, abstención y evaluación; pantalla de revisión humana | RAG funcionando y evaluado |
+| Jue 12 | PDF desde plantilla, evidencias si cabe, pruebas E2E, evaluación de IA, README, `docker compose` | Lista de calidad |
 | Vie 13 | Colchón, demostración grabada y entrega | Entrega |
 
 ## 9. Versionado propuesto

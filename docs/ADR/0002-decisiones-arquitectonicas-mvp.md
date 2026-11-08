@@ -1,4 +1,4 @@
-# ADR-0002 a ADR-0007: Decisiones arquitectónicas del MVP
+# ADR-0002 a ADR-0008: Decisiones arquitectónicas del MVP
 
 - Estado de todos: **propuesta**, pendiente de aprobación del Product Owner
 - Fecha: 2026-11-08
@@ -76,3 +76,15 @@
 **Consecuencias.** Menos infraestructura y un flujo fácil de depurar. Con un proveedor lento, la petición puede tardar; el tiempo máximo y el estado visible lo contienen.
 
 **Riesgos y mitigaciones.** Tiempos de espera largos: tiempo máximo configurable y mensaje claro al usuario.
+
+## ADR-0008: RAG con recuperación léxica por defecto, puerto de recuperación y Corpus versionado
+
+**Contexto.** El Product Owner exige el RAG desde el MVP, como base para sustentar la aplicación y para poder mejorar su conocimiento después. No hay garantía de contar con una clave de embeddings, y el plazo es de 5 días.
+
+**Decisión.** `RetrieverPort` con un adaptador léxico por defecto (índice de texto de MongoDB, sin clave) y un adaptador con embeddings opcional. Ingesta con fragmentación, hashes y Versión de corpus reproducible. Citas obligatorias, abstención por umbral y evaluación con un Conjunto de evaluación versionado. "Entrenar" se entiende como mejorar el Corpus, los prompts, los contratos y las evaluaciones, no como ajustar los pesos de un modelo.
+
+**Alternativas.** Embeddings desde el inicio con MongoDB Vector Search o Qdrant (mejor recuperación semántica, pero exige clave, más infraestructura y tiempo). Ajuste fino (fine-tuning) de un modelo (fuera del alcance del plan maestro y no necesario para sustentar respuestas con documentos).
+
+**Consecuencias.** El RAG funciona sin clave y de forma reproducible. La recuperación léxica es más débil que la semántica para preguntas con vocabulario distinto al del documento; la evaluación lo mide y el puerto permite añadir embeddings sin cambiar el resto.
+
+**Riesgos y mitigaciones.** Baja recuperación por diferencias de vocabulario: el Corpus sintético se redacta con el vocabulario del dominio, la evaluación reporta Recall@k y se deja el adaptador semántico listo para activarse.
